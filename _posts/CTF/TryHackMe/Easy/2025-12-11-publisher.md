@@ -15,6 +15,11 @@ Tryhackme [link](https://tryhackme.com/room/publisher)
 
 - Kali Linux
 - ffuf / dirb / gobuster
+- whatweb
+- git
+- openssl
+- python3
+- linpeas
 
 
 ### 1. Nmap Scan
