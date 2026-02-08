@@ -84,15 +84,24 @@ mkfs.xfs /dev/sda3
 Mount the root and boot partitions to prepare for the installation.
 
 ```bash
-mkdir -p /mnt/gentoo/boot
+mount /dev/sda3 /mnt/gentoo
 ```
 
 ```bash
-mount /dev/sda3 /mnt/gentoo
+mkdir -p /mnt/gentoo/boot
 mount /dev/sda1 /mnt/gentoo/boot
 ```
 
-Navigate to the mount point and download the ![**Stage3 tarball**](https://wiki.gentoo.org/wiki/Stage_file) (the base system files) using `links`.
+Check the current filesystem, using `lsblk`, Should look similar to:
+
+```bash
+sda      8:0    0 931.5G  0 disk
+├─sda1   8:1    0   512M  0 part /mnt/gentoo/boot
+├─sda2   8:2    0     8G  0 part [SWAP]
+└─sda3   8:3    0   923G  0 part /mnt/gentoo
+```
+
+Navigate to the mount point and download the [**Stage3 tarball**](https://wiki.gentoo.org/wiki/Stage_file) (the base system files) using `links`.
 
 ```bash
 cd /mnt/gentoo
@@ -171,7 +180,6 @@ USE="X wayland gtk gnome vaapi systemd dbus udev udisks pipewire bluetooth wifi 
 Update the Gentoo repositories:
 
 ```bash
-emerge-webrsync
 emerge --sync
 ```
 
@@ -253,13 +261,13 @@ echo "imac-gentoo" > /etc/hostname
 It's very important to install the Intel microcode for our iMac, or else the grub installation might include some AMD microcode (If you are compiling the kernel from makemenu this wouldn't be necessary.)
 
 ```bash
-emerge --ask sys-firmware/intel-microcode
+emerge --ask --quiet sys-firmware/intel-microcode
 ```
 
 Install the gentoo kernel and linux firmware, and dracut (to create initramfs).
 
 ```bash
-emerge --ask sys-kernel/linux-firmware sys-kernel/gentoo-kernel sys-kernel/dracut
+emerge --ask --quiet sys-kernel/linux-firmware sys-kernel/gentoo-kernel sys-kernel/dracut
 ```
 
 #### Fstab Configuration
@@ -288,7 +296,7 @@ UUID=XXXX-XXXXX... /           xfs     defaults,noatime      0 1
 Install and configure GRUB for EFI booting:
 
 ```bash
-emerge --ask sys-boot/grub
+emerge --ask --quiet sys-boot/grub
 ```
 
 ```bash
@@ -297,10 +305,10 @@ grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
 > 
-> *Note for Intel Systems*: Dracut may include *AMD microcode* by default which can be redundant. 
+> *Note for Intel Systems*: Dracut may include *AMD microcode* by default which can be problematic. 
 > You can remove it and regenerate the initramfs if needed:
 > `rm /boot/amd-uc.img`
-> `dracut --force --kver 6.12.63-gentoo-dist` (Keep in mind this is specific to kernel version 6.12, change to your version's kernel)
+> `dracut --force --kver 6.12.63-gentoo-dist` (Keep in mind this is specific to kernel version 6.XX.XX, change to your version's kernel)
 > `grub-mkconfig -o /boot/grub/grub.cfg`
 {: .prompt-danger }
 
@@ -323,15 +331,15 @@ emerge --sync SarahMiaOverlay
 
 You have two options for installation:
 
-#### Option A: Minimal Installation
+##### Option A: Minimal Installation
 
 ```bash
 emerge --ask --quiet budgie-base/budgie-meta
 ```
 
-#### Option B: Full Desktop Suite 
+##### Option B: Full Desktop Suite 
 
-Add the flag to /etc/portage/package.use/budgie-meta:
+Add the flag to `/etc/portage/package.use/budgie-meta`:
 
 If the user wishes to use the full desktop env:
 
@@ -380,12 +388,19 @@ systemctl enable dhcpd
 systemctl enable NetworkManager
 
 # System Utilities
-emerge --ask sys-apps/mlocate app-shells/bash-completion sys-fs/xfsprogs sys-block/io-scheduler-udev-rules emerge --ask app-admin/sudo
+emerge --ask --quiet sys-apps/mlocate app-shells/bash-completion sys-fs/xfsprogs sys-block/io-scheduler-udev-rules app-admin/sudo
 systemd-machine-id-setup
 systemctl preset-all
 systemctl enable sshd
 ```
 
+##### Drivers
+
+Install display drivers for the iris pro 5200:
+
+```bash
+emerge --ask --quiet media-libs/libva-intel-driver
+```
 
 Add a new user to not use root:
 
@@ -416,10 +431,10 @@ Here are common errors encountered during installation on this hardware.
 
 * Snapshot Timestamp Error
 
-  Symptom: When running emerge-webrsync, it fails claiming the local timestamp is newer than the snapshot. Fix:
+  Symptom: When running emerge --sync, it fails claiming the local timestamp is newer than the snapshot. Fix:
 
   1. Remove the timestamp file: `rm /var/db/repos/gentoo/metadata/timestamp.x`
-  2. Re-run `emerge-webrsync`
+  2. Re-run `emerge --sync`
   3. Reason: This usually happens if the command was run twice in quick succession (lock file issue) or if the system time is incorrect. Check time with `chronyd -q`.
 
 <br>

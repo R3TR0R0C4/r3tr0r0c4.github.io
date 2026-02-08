@@ -1,6 +1,6 @@
 ---
 title: "Using Unbound as a Local DNS Resolver (Beginner Guide)"
-date: 2025-01-05
+date: 2026-02-08
 categories: [Networking, DNS]
 tags: [dns, unbound, privacy, self-hosted]
 ---
@@ -14,7 +14,7 @@ In simple terms, it:
 - Caches responses for faster subsequent lookups.
 - Enhances privacy and security.
 
-Instead of forwarding queries to services like Google DNS or Cloudflare, Unbound handles resolution independently, starting from the [DNS root servers](https://www.cloudflare.com/learning/dns/glossary/dns-root-server/).
+Instead of forwarding queries to services like Google DNS or Cloudflare, Unbound handles resolution independently, starting from the [DNS root servers](https://www.cloudflare.com/learning/dns/glossary/dns-root-server/)
 
 ## Why Use Unbound?
 
